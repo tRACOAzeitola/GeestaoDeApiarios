@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Apiários</title>
+    <style>
+        :root {
+            --primary: #FFC107;
+            --primary-dark: #FFA000;
+            --secondary: #795548;
+            --light: #FFF8E1;
+            --danger: #F44336;
+            --warning: #FF9800;
+            --success: #4CAF50;
+            --info: #2196F3;
+            --text: #212121;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light);
+            color: var(--text);
+        }
+        
+        header {
+            background-color: var(--primary);
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo svg {
+            margin-right: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+        }
+        
+        .nav-links a {
+            color: var(--secondary);
+            margin-left: 1.5rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .apiario-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .stat-box {
+            flex-grow: 1;
+            min-width: 100px;
+            padding: 0.8rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-box.boa {
+            background-color: #E6F4EA;
+            color: var(--success);
+        }
+        
+        .stat-box.forte {
+            background-color: #E3F2FD;
+            color: var(--info);
+        }
+        
+        .stat-box.fraca {
+            background-color: #FFF3E0;
+            color: var(--warning);
+        }
+        
+        .stat-box.morta {
+            background-color: #FFEBEE;
+            color: var(--danger);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+        }
+        
+        .colmeias-list {
+            margin-top: 2rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.boa {
+            background-color: var(--success);
+        }
+        
+        .status-indicator.forte {
+            background-color: var(--info);
+        }
+        
+        .status-indicator.fraca {
+            background-color: var(--warning);
+        }
+        
+        .status-indicator.morta {
+            background-color: var(--danger);
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: white;
+        }
+        
+        .form-actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .legenda {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+        }
+        
+        .legenda-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .colmeia-counts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .count-input {
+            display: flex;
+            align-items: center;
+            background-color: #f5f5f5;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        
+        .count-input label {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+        
+        .count-input input {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="#795548"/>
+                    <path d="M19 19H5V21H19V19Z" fill="#795548"/>
+                </svg>
+                Gestão de Apiários
+            </div>
+            <div class="nav-links">
+                <a href="#dashboard">Dashboard</a>
+                <a href="#apiarios">Apiários</a>
+                <a href="#colmeias">Colmeias</a>
+                <a href="#materiais">Materiais</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div id="dashboard">
+            <h1>Dashboard</h1>
+            
+            <div class="legenda">
+                <div class="legenda-item">
+                    <div class="legenda-icon">🪨</div>
+                    <div>1 pedra ao meio - Colmeia boa</div>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-icon">🪨🪨</div>
+                    <div>2 pedras ao meio - Colmeia forte</div>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-icon">↖️🪨</div>
+                    <div>1 pedra à esquerda - Colmeia fraca</div>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-icon">🥢</div>
+                    <div>1 pau ao meio - Colmeia morta</div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Apiário Rosmaninho (API-001)</span>
+                        <button class="btn btn-outline">Detalhes</button>
+                    </div>
+                    <div>Localização: 40.6405° N, 7.9101° W</div>
+                    <div>Flora: Rosmaninho</div>
+                    <div class="apiario-stats">
+                        <div class="stat-box boa">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">Boas</div>
+                        </div>
+                        <div class="stat-box forte">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label">Fortes</div>
+                        </div>
+                        <div class="stat-box fraca">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Fracas</div>
+                        </div>
+                        <div class="stat-box morta">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Mortas</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <span>Apiário Castanheiro (API-002)</span>
+                        <button class="btn btn-outline">Detalhes</button>
+                    </div>
+                    <div>Localização: 40.5503° N, 7.8234° W</div>
+                    <div>Flora: Flor de Castanheiro</div>
+                    <div class="apiario-stats">
+                        <div class="stat-box boa">
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Boas</div>
+                        </div>
+                        <div class="stat-box forte">
+                            <div class="stat-value">10</div>
+                            <div class="stat-label">Fortes</div>
+                        </div>
+                        <div class="stat-box fraca">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Fracas</div>
+                        </div>
+                        <div class="stat-box morta">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Mortas</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <span>Apiário Eucalipto (API-003)</span>
+                        <button class="btn btn-outline">Detalhes</button>
+                    </div>
+                    <div>Localização: 40.7123° N, 7.8901° W</div>
+                    <div>Flora: Eucalipto</div>
+                    <div class="apiario-stats">
+                        <div class="stat-box boa">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Boas</div>
+                        </div>
+                        <div class="stat-box forte">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">Fortes</div>
+                        </div>
+                        <div class="stat-box fraca">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">Fracas</div>
+                        </div>
+                        <div class="stat-box morta">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">Mortas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>Colmeias que Necessitam Atenção</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Apiário</th>
+                            <th>Estado</th>
+                            <th>Quantidade</th>
+                            <th>Ação Necessária</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Rosmaninho (API-001)</td>
+                            <td><span class="status-indicator forte"></span>Forte</td>
+                            <td>15</td>
+                            <td>Alça URGENTE</td>
+                            <td><button class="btn btn-primary">Atender</button></td>
+                        </tr>
+                        <tr>
+                            <td>Rosmaninho (API-001)</td>
+                            <td><span class="status-indicator fraca"></span>Fraca</td>
+                            <td>3</td>
+                            <td>Verificar rainha/alimentação</td>
+                            <td><button class="btn btn-primary">Atender</button></td>
+                        </tr>
+                        <tr>
+                            <td>Castanheiro (API-002)</td>
+                            <td><span class="status-indicator fraca"></span>Fraca</td>
+                            <td>2</td>
+                            <td>Verificar rainha/alimentação</td>
+                            <td><button class="btn btn-primary">Atender</button></td>
+                        </tr>
+                        <tr>
+                            <td>Rosmaninho (API-001)</td>
+                            <td><span class="status-indicator morta"></span>Morta</td>
+                            <td>2</td>
+                            <td>Levar para Pavilhão</td>
+                            <td><button class="btn btn-primary">Atender</button></td>
+                        </tr>
+                        <tr>
+                            <td>Eucalipto (API-003)</td>
+                            <td><span class="status-indicator morta"></span>Morta</td>
+                            <td>1</td>
+                            <td>Levar para Pavilhão</td>
+                            <td><button class="btn btn-primary">Atender</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="apiarios" style="margin-top: 3rem;">
+            <div class="card">
+                <div class="card-title">
+                    <span>Adicionar Novo Apiário</span>
+                </div>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label class="form-label">ID do Apiário</label>
+                        <input type="text" class="form-control" placeholder="Ex: API-004">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nome do Apiário</label>
+                        <input type="text" class="form-control" placeholder="Ex: Apiário Rosmaninho">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Localização (opcional)</label>
+                        <input type="text" class="form-control" placeholder="Latitude, Longitude">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Flora</label>
+                        <select class="form-select">
+                            <option>Selecione...</option>
+                            <option>Rosmaninho</option>
+                            <option>7 Sangrias</option>
+                            <option>Flor de Castanheiro</option>
+                            <option>Melada de Carvalho</option>
+                            <option>Multi Floral</option>
+                            <option>Eucalipto</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-outline">Cancelar</button>
+                        <button class="btn btn-primary">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="colmeias" style="margin-top: 3rem;">
+            <div class="card">
+                <div class="card-title">
+                    <span>Adicionar Colmeias em Lote</span>
+                </div>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label class="form-label">Apiário</label>
+                        <select class="form-select">
+                            <option>Selecione...</option>
+                            <option>Rosmaninho (API-001)</option>
+                            <option>Castanheiro (API-002)</option>
+                            <option>Eucalipto (API-003)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Quantidade de Colmeias por Estado</label>
+                        <div class="colmeia-counts">
+                            <div class="count-input">
+                                <label>Boas (1 pedra ao meio)</label>
+                                <input type="number" min="0" max="100" value="0">
+                            </div>
+                            
+                            <div class="count-input">
+                                <label>Fortes (2 pedras ao meio)</label>
+                                <input type="number" min="0" max="100" value="0">
+                            </div>
+                            
+                            <div class="count-input">
+                                <label>Fracas (1 pedra à esquerda)</label>
+                                <input type="number" min="0" max="100" value="0">
+                            </div>
+                            
+                            <div class="count-input">
+                                <label>Mortas (1 pau ao meio)</label>
+                                <input type="number" min="0" max="100" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Observações</label>
+                        <textarea class="form-control" rows="3" placeholder="Adicione detalhes sobre as colmeias..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-outline">Cancelar</button>
+                        <button class="btn btn-primary">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="materiais" style="margin-top: 3rem;">
+            <div class="card">
+                <div class="card-title">
+                    <span>Adicionar Material</span>
+                </div>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label class="form-label">Apiário</label>
+                        <select class="form-select">
+                            <option>Selecione...</option>
+                            <option>Rosmaninho (API-001)</option>
+                            <option>Castanheiro (API-002)</option>
+                            <option>Eucalipto (API-003)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Material</label>
+                        <select class="form-select">
+                            <option>Selecione...</option>
+                            <option>Alça</option>
+                            <option>Colmeia Reversível</option>
+                            <option>Colmeia Lusitana</option>
+                            <option>Alimentadores</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantidade</label>
+                        <input type="number" class="form-control" min="1" max="100" value="1">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-outline">Cancelar</button>
+                        <button class="btn btn-primary">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Simulação de funcionalidades básicas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Exemplo de como adicionar dinamicamente eventos aos botões
+            const detailButtons = document.querySelectorAll('.btn-outline');
+            detailButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    alert('Esta funcionalidade seria implementada com um backend real.');
+                });
+            });
+            
+            const actionButtons = document.querySelectorAll('.btn-primary');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    alert('Esta ação seria processada com um backend real.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
