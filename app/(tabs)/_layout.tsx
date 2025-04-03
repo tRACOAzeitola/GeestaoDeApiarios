@@ -1,65 +1,52 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Ionicons } from '@expo/vector-icons';
+import Theme from '../../constants/Theme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: true,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        headerTitle: 'Gestão de Apiários',
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
+        tabBarActiveTintColor: Theme.COLORS.primary.default,
+        tabBarInactiveTintColor: Theme.COLORS.text.secondary,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
+          title: "Dashboard",
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
         name="apiarios"
         options={{
-          title: 'Apiários',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
+          title: "Apiários",
+          tabBarIcon: ({ color }) => <Ionicons name="leaf" size={24} color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
         name="colmeias"
         options={{
-          title: 'Colmeias',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />,
+          title: "Colmeias",
+          tabBarIcon: ({ color }) => <Ionicons name="grid" size={24} color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
         name="materiais"
         options={{
-          title: 'Materiais',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="wrench.fill" color={color} />,
+          title: "Materiais",
+          tabBarIcon: ({ color }) => <Ionicons name="cube" size={24} color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
-        name="weather"
+        name="clima"
         options={{
-          title: 'Clima',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="sun.max.fill" color={color} />,
+          title: "Clima",
+          tabBarIcon: ({ color }) => <Ionicons name="sunny" size={24} color={color} />,
+          headerShown: false,
         }}
       />
     </Tabs>
