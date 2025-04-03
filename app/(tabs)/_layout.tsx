@@ -1,13 +1,30 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Theme from '../../constants/Theme';
+import { View } from 'react-native';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function TabLayout() {
+  const { theme, isDarkMode } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Theme.COLORS.primary.default,
-        tabBarInactiveTintColor: Theme.COLORS.text.secondary,
+        tabBarActiveTintColor: theme.COLORS.primary.default,
+        tabBarInactiveTintColor: theme.COLORS.text.secondary,
+        tabBarStyle: {
+          backgroundColor: isDarkMode ? theme.COLORS.surface.dark : 'white',
+          borderTopColor: theme.COLORS.border.light,
+        },
+        headerStyle: {
+          backgroundColor: theme.COLORS.primary.default,
+        },
+        headerTintColor: 'white',
+        headerRight: () => (
+          <View style={{ marginRight: 15 }}>
+            <ThemeToggle size="small" />
+          </View>
+        ),
       }}>
       <Tabs.Screen
         name="index"

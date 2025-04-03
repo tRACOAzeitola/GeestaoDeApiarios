@@ -48,6 +48,7 @@ interface ApiaryContextType {
   totalApiaries: () => number;
   totalHives: () => number;
   hivesData: () => {status: string, count: number}[];
+  updateHiveStats: (apiaryId: string, status: 'good' | 'strong' | 'weak' | 'dead', count: number) => void;
 }
 
 // Create context
@@ -285,6 +286,23 @@ export const ApiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setUrgentHives(prev => prev.filter(hive => hive.id !== hiveId));
   };
 
+  // Update hive statistics for a specific apiary
+  const updateHiveStats = (apiaryId: string, status: 'good' | 'strong' | 'weak' | 'dead', count: number) => {
+    setApiaries(prev => prev.map(apiary => {
+      if (apiary.id === apiaryId) {
+        return {
+          ...apiary,
+          stats: {
+            ...apiary.stats,
+            [status]: count
+          },
+          lastVisit: new Date().toISOString().split('T')[0]
+        };
+      }
+      return apiary;
+    }));
+  };
+
   return (
     <ApiaryContext.Provider value={{ 
       apiaries, 
@@ -298,7 +316,8 @@ export const ApiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       updateWeather,
       totalApiaries,
       totalHives,
-      hivesData
+      hivesData,
+      updateHiveStats
     }}>
       {children}
     </ApiaryContext.Provider>

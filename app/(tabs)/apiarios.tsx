@@ -1,206 +1,236 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useApiaryContext } from '../../context/ApiaryContext';
-import Theme from '../../constants/Theme';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function ApiariesScreen() {
-  const { addApiary } = useApiaryContext();
+export default function ApiaryScreen() {
+  const { apiaries, addApiary } = useApiaryContext();
+  const { theme, isDarkMode } = useTheme();
+  const [showForm, setShowForm] = useState(false);
   const [apiaryId, setApiaryId] = useState('');
   const [apiaryName, setApiaryName] = useState('');
   const [location, setLocation] = useState('');
   const [floraType, setFloraType] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [showForm, setShowForm] = useState(false);
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!apiaryId) {
-      newErrors.apiaryId = 'ID do apiário é obrigatório';
-    }
-    
-    if (!apiaryName) {
-      newErrors.apiaryName = 'Nome do apiário é obrigatório';
-    }
-    
-    if (!floraType) {
-      newErrors.floraType = 'Tipo de flora é obrigatório';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleBlur = (field: string) => {
-    setTouched({ ...touched, [field]: true });
-  };
+  const [error, setError] = useState<string | null>(null);
 
   const handleAddApiary = () => {
-    // Mark all fields as touched
-    setTouched({
-      apiaryId: true,
-      apiaryName: true,
-      floraType: true
-    });
+    setError(null);
     
-    if (!validateForm()) {
+    // Validation
+    if (!apiaryId.trim()) {
+      setError('ID do apiário é obrigatório');
+      return;
+    }
+    if (!apiaryName.trim()) {
+      setError('Nome do apiário é obrigatório');
+      return;
+    }
+    if (!floraType.trim()) {
+      setError('Tipo de flora é obrigatório');
       return;
     }
 
-    // Add apiary through context
+    // Check for duplicate ID
+    if (apiaries.some(a => a.id === apiaryId)) {
+      setError('Este ID de apiário já existe');
+      return;
+    }
+
+    // Add new apiary
     addApiary({
       id: apiaryId,
       name: apiaryName,
-      location: location || 'Localização não especificada',
-      flora: floraType
+      location: location || 'Não especificado',
+      flora: floraType,
+      lastVisit: new Date().toLocaleDateString('pt-BR'),
+      stats: { good: 0, strong: 0, weak: 0, dead: 0 },
+      weather: { 
+        temperature: '25°C', 
+        condition: 'Ensolarado',
+        humidity: '60%'
+      }
     });
-    
-    alert('Apiário adicionado com sucesso!');
-    
+
     // Reset form
     setApiaryId('');
     setApiaryName('');
     setLocation('');
     setFloraType('');
-    setErrors({});
-    setTouched({});
     setShowForm(false);
+    
+    Alert.alert('Sucesso', 'Apiário adicionado com sucesso!');
   };
 
-  const handleCancel = () => {
+  const cancelForm = () => {
     setApiaryId('');
     setApiaryName('');
     setLocation('');
     setFloraType('');
-    setErrors({});
-    setTouched({});
+    setError(null);
     setShowForm(false);
   };
 
-  const toggleFormVisibility = () => {
-    setShowForm(!showForm);
-  };
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gestão de Apiários</Text>
-        <TouchableOpacity style={styles.addButton} onPress={toggleFormVisibility}>
-          <Ionicons name="add-circle" size={24} color="white" />
+  const renderApiary = ({ item }) => (
+    <View style={[styles.apiaryCard, { backgroundColor: theme.COLORS.surface.light }]}>
+      <View style={styles.apiaryHeader}>
+        <Text style={[styles.apiaryTitle, { color: theme.COLORS.text.primary }]}>
+          {item.name} ({item.id})
+        </Text>
+        <TouchableOpacity style={[styles.detailsButton, { borderColor: theme.COLORS.primary.default }]}>
+          <Text style={[styles.detailsButtonText, { color: theme.COLORS.primary.default }]}>Detalhes</Text>
         </TouchableOpacity>
       </View>
-    
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {showForm ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Adicionar Novo Apiário</Text>
-            <View style={styles.formContainer}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>ID do Apiário</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    errors.apiaryId && touched.apiaryId ? styles.inputError : null
-                  ]}
-                  placeholder="Ex: API-004"
-                  value={apiaryId}
-                  onChangeText={setApiaryId}
-                  onBlur={() => handleBlur('apiaryId')}
-                />
-                {errors.apiaryId && touched.apiaryId && (
-                  <Text style={styles.errorText}>{errors.apiaryId}</Text>
-                )}
-              </View>
-              
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Nome do Apiário</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    errors.apiaryName && touched.apiaryName ? styles.inputError : null
-                  ]}
-                  placeholder="Ex: Apiário Rosmaninho"
-                  value={apiaryName}
-                  onChangeText={setApiaryName}
-                  onBlur={() => handleBlur('apiaryName')}
-                />
-                {errors.apiaryName && touched.apiaryName && (
-                  <Text style={styles.errorText}>{errors.apiaryName}</Text>
-                )}
-              </View>
-              
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Localização (opcional)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Latitude, Longitude"
-                  value={location}
-                  onChangeText={setLocation}
-                />
-              </View>
-              
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Tipo de Flora</Text>
-                <View style={[
-                  styles.formSelect,
-                  errors.floraType && touched.floraType ? styles.formSelectError : null
-                ]}>
-                  <Picker
-                    selectedValue={floraType}
-                    onValueChange={(itemValue: string) => {
-                      setFloraType(itemValue);
-                      setTouched({ ...touched, floraType: true });
-                    }}
-                  >
-                    <Picker.Item label="Selecione..." value="" />
-                    <Picker.Item label="Rosmaninho" value="rosmaninho" />
-                    <Picker.Item label="7 Sangrias" value="7sangrias" />
-                    <Picker.Item label="Flor de Castanheiro" value="castanheiro" />
-                    <Picker.Item label="Melada de Carvalho" value="carvalho" />
-                    <Picker.Item label="Multi Floral" value="multifloral" />
-                    <Picker.Item label="Eucalipto" value="eucalipto" />
-                  </Picker>
-                </View>
-                {errors.floraType && touched.floraType && (
-                  <Text style={styles.errorText}>{errors.floraType}</Text>
-                )}
-              </View>
-              
-              <View style={styles.formActions}>
-                <TouchableOpacity 
-                  style={styles.button}
-                  onPress={handleCancel}
-                >
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.button, styles.primaryButton]}
-                  onPress={handleAddApiary}
-                >
-                  <Text style={styles.primaryButtonText}>Adicionar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+      
+      <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>Localização: {item.location}</Text>
+      <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>Flora: {item.flora}</Text>
+      
+      <View style={styles.statsContainer}>
+        <View style={styles.statsRow}>
+          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.good }]}>
+            <Text style={styles.statValue}>{item.stats.good}</Text>
+            <Text style={styles.statLabel}>Boas</Text>
           </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Ionicons name="leaf" size={64} color={Theme.COLORS.primary.light} />
-            <Text style={styles.emptyStateTitle}>Sem Apiários</Text>
-            <Text style={styles.emptyStateText}>
-              Clique no botão + para adicionar um novo apiário ao sistema.
-            </Text>
+          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.strong }]}>
+            <Text style={styles.statValue}>{item.stats.strong}</Text>
+            <Text style={styles.statLabel}>Fortes</Text>
+          </View>
+        </View>
+        <View style={styles.statsRow}>
+          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.weak }]}>
+            <Text style={styles.statValue}>{item.stats.weak}</Text>
+            <Text style={styles.statLabel}>Fracas</Text>
+          </View>
+          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.dead }]}>
+            <Text style={styles.statValue}>{item.stats.dead}</Text>
+            <Text style={styles.statLabel}>Mortas</Text>
+          </View>
+        </View>
+      </View>
+      
+      <Text style={[styles.lastVisitText, { color: theme.COLORS.text.secondary }]}>
+        Última visita: {item.lastVisit}
+      </Text>
+    </View>
+  );
+
+  return (
+    <View style={[styles.container, { backgroundColor: theme.COLORS.background.light }]}>
+      <View style={[styles.header, { backgroundColor: theme.COLORS.primary.default }]}>
+        <Text style={styles.headerTitle}>Meus Apiários</Text>
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: theme.COLORS.accent.default }]} 
+          onPress={() => setShowForm(!showForm)}
+        >
+          <Ionicons name={showForm ? "close" : "add"} size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+      
+      {showForm ? (
+        <View style={[styles.formContainer, { backgroundColor: theme.COLORS.surface.light }]}>
+          <Text style={[styles.formTitle, { color: theme.COLORS.text.primary }]}>Adicionar Novo Apiário</Text>
+          
+          {error && (
+            <Text style={styles.errorText}>{error}</Text>
+          )}
+          
+          <View style={styles.inputGroup}>
+            <Text style={[styles.inputLabel, { color: theme.COLORS.text.secondary }]}>ID do Apiário</Text>
+            <TextInput
+              style={[styles.input, { 
+                backgroundColor: isDarkMode ? theme.COLORS.surface.dark : theme.COLORS.surface.lighter,
+                color: theme.COLORS.text.primary,
+                borderColor: theme.COLORS.border.default
+              }]}
+              value={apiaryId}
+              onChangeText={setApiaryId}
+              placeholder="Ex: AP001"
+              placeholderTextColor={theme.COLORS.text.disabled}
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={[styles.inputLabel, { color: theme.COLORS.text.secondary }]}>Nome do Apiário</Text>
+            <TextInput
+              style={[styles.input, { 
+                backgroundColor: isDarkMode ? theme.COLORS.surface.dark : theme.COLORS.surface.lighter,
+                color: theme.COLORS.text.primary,
+                borderColor: theme.COLORS.border.default
+              }]}
+              value={apiaryName}
+              onChangeText={setApiaryName}
+              placeholder="Ex: Apiário Central"
+              placeholderTextColor={theme.COLORS.text.disabled}
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={[styles.inputLabel, { color: theme.COLORS.text.secondary }]}>Localização</Text>
+            <TextInput
+              style={[styles.input, { 
+                backgroundColor: isDarkMode ? theme.COLORS.surface.dark : theme.COLORS.surface.lighter,
+                color: theme.COLORS.text.primary,
+                borderColor: theme.COLORS.border.default
+              }]}
+              value={location}
+              onChangeText={setLocation}
+              placeholder="Ex: Fazenda Vista Alegre"
+              placeholderTextColor={theme.COLORS.text.disabled}
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={[styles.inputLabel, { color: theme.COLORS.text.secondary }]}>Tipo de Flora</Text>
+            <TextInput
+              style={[styles.input, { 
+                backgroundColor: isDarkMode ? theme.COLORS.surface.dark : theme.COLORS.surface.lighter,
+                color: theme.COLORS.text.primary,
+                borderColor: theme.COLORS.border.default
+              }]}
+              value={floraType}
+              onChangeText={setFloraType}
+              placeholder="Ex: Eucalipto, Laranjeira"
+              placeholderTextColor={theme.COLORS.text.disabled}
+            />
+          </View>
+          
+          <View style={styles.formButtons}>
             <TouchableOpacity 
-              style={[styles.button, styles.primaryButton, styles.emptyStateButton]}
-              onPress={toggleFormVisibility}
+              style={[styles.cancelButton, { borderColor: theme.COLORS.error.default }]} 
+              onPress={cancelForm}
             >
-              <Text style={styles.primaryButtonText}>Adicionar Apiário</Text>
+              <Text style={[styles.cancelButtonText, { color: theme.COLORS.error.default }]}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.submitButton, { backgroundColor: theme.COLORS.success.default }]} 
+              onPress={handleAddApiary}
+            >
+              <Text style={styles.submitButtonText}>Adicionar</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </ScrollView>
+        </View>
+      ) : (
+        <>
+          {apiaries.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="leaf-outline" size={64} color={theme.COLORS.text.disabled} />
+              <Text style={[styles.emptyText, { color: theme.COLORS.text.secondary }]}>
+                Nenhum apiário cadastrado
+              </Text>
+              <Text style={[styles.emptySubtext, { color: theme.COLORS.text.disabled }]}>
+                Adicione seu primeiro apiário clicando no botão +
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={apiaries}
+              renderItem={renderApiary}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContainer}
+            />
+          )}
+        </>
+      )}
     </View>
   );
 }
@@ -208,15 +238,14 @@ export default function ApiariesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Theme.COLORS.background.light,
   },
   header: {
     height: 100,
-    backgroundColor: Theme.COLORS.primary.default,
     paddingTop: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 16,
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerTitle: {
     color: 'white',
@@ -224,116 +253,144 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
-    position: 'absolute',
-    right: 15,
-    top: 45,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+  listContainer: {
     padding: 16,
   },
-  card: {
-    backgroundColor: 'white',
+  apiaryCard: {
+    padding: 16,
     borderRadius: 8,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    color: Theme.COLORS.secondary.default,
-  },
-  formContainer: {
-    width: '100%',
-  },
-  formGroup: {
     marginBottom: 16,
   },
-  formLabel: {
+  apiaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
-    fontWeight: '500',
-    fontSize: 14,
-    color: Theme.COLORS.text.primary,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: Theme.COLORS.border.light,
-    borderRadius: 8,
-    padding: 10,
+  apiaryTitle: {
     fontSize: 16,
+    fontWeight: 'bold',
   },
-  inputError: {
-    borderColor: 'red',
-  },
-  formSelect: {
+  detailsButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: Theme.COLORS.border.light,
-    borderRadius: 8,
-    backgroundColor: 'white',
+  },
+  detailsButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  apiaryInfo: {
+    fontSize: 14,
     marginBottom: 4,
   },
-  formSelectError: {
-    borderColor: 'red',
+  statsContainer: {
+    marginVertical: 8,
   },
-  formActions: {
-    marginTop: 24,
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
-  errorText: {
+  statBox: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  statValue: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  statLabel: {
+    color: 'white',
     fontSize: 12,
-    color: 'red',
+  },
+  lastVisitText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'right',
     marginTop: 4,
   },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Theme.COLORS.primary.default,
-  },
-  buttonText: {
-    color: Theme.COLORS.primary.default,
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  primaryButton: {
-    backgroundColor: Theme.COLORS.primary.default,
-    borderColor: Theme.COLORS.primary.default,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  emptyState: {
-    alignItems: 'center',
+  emptyContainer: {
+    flex: 1,
     justifyContent: 'center',
-    padding: 40,
-    marginTop: 40,
+    alignItems: 'center',
+    padding: 32,
   },
-  emptyStateTitle: {
-    fontSize: 22,
+  emptyText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: Theme.COLORS.text.primary,
     marginTop: 16,
   },
-  emptyStateText: {
-    fontSize: 16,
-    color: Theme.COLORS.text.secondary,
+  emptySubtext: {
+    fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
-    marginBottom: 24,
   },
-  emptyStateButton: {
-    minWidth: 200,
+  formContainer: {
+    padding: 16,
+    margin: 16,
+    borderRadius: 8,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  formButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  cancelButton: {
+    flex: 1,
+    height: 48,
+    borderWidth: 1,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    fontWeight: '600',
+  },
+  submitButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#FF3B30',
+    marginBottom: 16,
   },
 }); 

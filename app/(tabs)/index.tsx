@@ -1,19 +1,20 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useApiaryContext } from '../../context/ApiaryContext';
-import Theme from '../../constants/Theme';
+import { useTheme } from '../../context/ThemeContext';
 import { VictoryPie } from 'victory-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function DashboardScreen() {
   const { apiaries, totalApiaries, totalHives, hivesData, urgentHives } = useApiaryContext();
+  const { theme, isDarkMode } = useTheme();
   
   // Status color mapping for the charts
   const statusColorMap: { [key: string]: string } = {
-    'Boas': Theme.COLORS.status.good,
-    'Fortes': Theme.COLORS.status.strong,
-    'Fracas': Theme.COLORS.status.weak,
-    'Mortas': Theme.COLORS.status.dead
+    'Boas': theme.COLORS.status.good,
+    'Fortes': theme.COLORS.status.strong,
+    'Fracas': theme.COLORS.status.weak,
+    'Mortas': theme.COLORS.status.dead
   };
 
   // Calculate most recent apiary by last visit
@@ -26,50 +27,50 @@ export default function DashboardScreen() {
   const recentApiaries = getMostRecentApiaries();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.COLORS.background.light }]}>
+      <View style={[styles.header, { backgroundColor: theme.COLORS.primary.default }]}>
         <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
       
       <ScrollView style={styles.scrollView}>
         {/* Summary Cards */}
-        <View style={styles.summaryContainer}>
+        <View style={[styles.summaryContainer, { backgroundColor: theme.COLORS.surface.light }]}>
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{totalApiaries()}</Text>
-            <Text style={styles.summaryLabel}>Total de Apiários</Text>
+            <Text style={[styles.summaryValue, { color: theme.COLORS.secondary.default }]}>{totalApiaries()}</Text>
+            <Text style={[styles.summaryLabel, { color: theme.COLORS.text.secondary }]}>Total de Apiários</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{totalHives()}</Text>
-            <Text style={styles.summaryLabel}>Total de Colmeias</Text>
+            <Text style={[styles.summaryValue, { color: theme.COLORS.secondary.default }]}>{totalHives()}</Text>
+            <Text style={[styles.summaryLabel, { color: theme.COLORS.text.secondary }]}>Total de Colmeias</Text>
           </View>
         </View>
 
         {/* Legenda */}
-        <View style={styles.legendaContainer}>
-          <Text style={styles.sectionTitle}>Sistema de Classificação</Text>
+        <View style={[styles.legendaContainer, { backgroundColor: theme.COLORS.surface.light }]}>
+          <Text style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}>Sistema de Classificação</Text>
           <View style={styles.legenda}>
             <View style={styles.legendaItem}>
               <Text style={styles.legendaIcon}>🪨</Text>
-              <Text style={styles.legendaText}>1 pedra ao meio - Colmeia boa</Text>
+              <Text style={[styles.legendaText, { color: theme.COLORS.text.secondary }]}>1 pedra ao meio - Colmeia boa</Text>
             </View>
             <View style={styles.legendaItem}>
               <Text style={styles.legendaIcon}>🪨🪨</Text>
-              <Text style={styles.legendaText}>2 pedras ao meio - Colmeia forte</Text>
+              <Text style={[styles.legendaText, { color: theme.COLORS.text.secondary }]}>2 pedras ao meio - Colmeia forte</Text>
             </View>
             <View style={styles.legendaItem}>
               <Text style={styles.legendaIcon}>↖️🪨</Text>
-              <Text style={styles.legendaText}>1 pedra à esquerda - Colmeia fraca</Text>
+              <Text style={[styles.legendaText, { color: theme.COLORS.text.secondary }]}>1 pedra à esquerda - Colmeia fraca</Text>
             </View>
             <View style={styles.legendaItem}>
               <Text style={styles.legendaIcon}>🥢</Text>
-              <Text style={styles.legendaText}>1 pau ao meio - Colmeia morta</Text>
+              <Text style={[styles.legendaText, { color: theme.COLORS.text.secondary }]}>1 pau ao meio - Colmeia morta</Text>
             </View>
           </View>
         </View>
 
         {/* Chart */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.sectionTitle}>Distribuição de Colmeias</Text>
+        <View style={[styles.chartContainer, { backgroundColor: theme.COLORS.surface.light }]}>
+          <Text style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}>Distribuição de Colmeias</Text>
           <View style={styles.chartContent}>
             <VictoryPie
               data={hivesData()}
@@ -80,7 +81,7 @@ export default function DashboardScreen() {
               labelRadius={30}
               style={{
                 labels: {
-                  fill: Theme.COLORS.text.primary,
+                  fill: theme.COLORS.text.primary,
                   fontSize: 12,
                   fontWeight: 'bold'
                 }
@@ -92,28 +93,40 @@ export default function DashboardScreen() {
         {/* Recent Apiaries */}
         {recentApiaries.length > 0 && (
           <View style={styles.apiariesContainer}>
-            <Text style={styles.sectionTitle}>Apiários Recentes</Text>
+            <Text style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}>Apiários Recentes</Text>
             {recentApiaries.slice(0, 2).map((apiary) => (
-              <View key={apiary.id} style={styles.apiaryCard}>
+              <View key={apiary.id} style={[styles.apiaryCard, { backgroundColor: theme.COLORS.surface.light }]}>
                 <View style={styles.apiaryHeader}>
-                  <Text style={styles.apiaryTitle}>{apiary.name} ({apiary.id})</Text>
-                  <TouchableOpacity style={styles.detailsButton}>
-                    <Text style={styles.detailsButtonText}>Detalhes</Text>
+                  <Text style={[styles.apiaryTitle, { color: theme.COLORS.text.primary }]}>
+                    {apiary.name} ({apiary.id})
+                  </Text>
+                  <TouchableOpacity 
+                    style={[styles.detailsButton, { borderColor: theme.COLORS.secondary.default }]}
+                  >
+                    <Text style={[styles.detailsButtonText, { color: theme.COLORS.secondary.default }]}>
+                      Detalhes
+                    </Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.apiaryInfo}>Localização: {apiary.location}</Text>
-                <Text style={styles.apiaryInfo}>Flora: {apiary.flora}</Text>
+                <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>
+                  Localização: {apiary.location}
+                </Text>
+                <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>
+                  Flora: {apiary.flora}
+                </Text>
                 <View style={styles.weatherInfo}>
                   <Ionicons 
                     name={apiary.weather.condition.toLowerCase().includes('sol') ? 'sunny' : 'cloudy'} 
                     size={18} 
-                    color={Theme.COLORS.primary.default} 
+                    color={theme.COLORS.primary.default} 
                   />
-                  <Text style={styles.weatherText}>
+                  <Text style={[styles.weatherText, { color: theme.COLORS.text.secondary }]}>
                     {apiary.weather.temperature}, {apiary.weather.condition}
                   </Text>
                 </View>
-                <Text style={styles.lastVisitText}>Última visita: {apiary.lastVisit}</Text>
+                <Text style={[styles.lastVisitText, { color: theme.COLORS.text.secondary }]}>
+                  Última visita: {apiary.lastVisit}
+                </Text>
                 <View style={styles.statusContainer}>
                   <View style={[styles.statusBox, styles.statusGood]}>
                     <Text style={styles.statusValue}>{apiary.stats.good}</Text>
@@ -140,21 +153,25 @@ export default function DashboardScreen() {
         {/* Urgent Hives */}
         {urgentHives.length > 0 && (
           <View style={styles.urgentContainer}>
-            <Text style={styles.sectionTitle}>Colmeias que Necessitam Atenção</Text>
+            <Text style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}>Colmeias que Necessitam Atenção</Text>
             {urgentHives.map((hive) => (
-              <View key={hive.id} style={styles.urgentCard}>
+              <View key={hive.id} style={[styles.urgentCard, { backgroundColor: theme.COLORS.surface.light }]}>
                 <View style={styles.urgentInfo}>
-                  <Text style={styles.urgentApiary}>{hive.apiary}</Text>
+                  <Text style={[styles.urgentApiary, { color: theme.COLORS.text.primary }]}>{hive.apiary}</Text>
                   <View style={styles.statusRow}>
                     <View style={[styles.statusIndicator, styles[`status${hive.status}`]]} />
-                    <Text style={styles.urgentStatus}>
+                    <Text style={[styles.urgentStatus, { color: theme.COLORS.text.secondary }]}>
                       {hive.status.charAt(0).toUpperCase() + hive.status.slice(1)}
                     </Text>
                   </View>
-                  <Text style={styles.urgentQuantity}>Quantidade: {hive.quantity}</Text>
-                  <Text style={styles.urgentAction}>Ação: {hive.action}</Text>
+                  <Text style={[styles.urgentQuantity, { color: theme.COLORS.text.secondary }]}>
+                    Quantidade: {hive.quantity}
+                  </Text>
+                  <Text style={[styles.urgentAction, { color: theme.COLORS.text.secondary }]}>
+                    Ação: {hive.action}
+                  </Text>
                 </View>
-                <TouchableOpacity style={styles.attendButton}>
+                <TouchableOpacity style={[styles.attendButton, { backgroundColor: theme.COLORS.primary.default }]}>
                   <Text style={styles.attendButtonText}>Atender</Text>
                 </TouchableOpacity>
               </View>
@@ -169,11 +186,9 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Theme.COLORS.background.light,
   },
   header: {
     height: 100,
-    backgroundColor: Theme.COLORS.primary.default,
     paddingTop: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -190,11 +205,9 @@ const styles = StyleSheet.create({
   summaryContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 8,
     marginBottom: 16,
-    ...Theme.SHADOWS.light,
   },
   summaryItem: {
     alignItems: 'center',
@@ -202,24 +215,19 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Theme.COLORS.secondary.default,
   },
   summaryLabel: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
-    color: Theme.COLORS.text.primary,
   },
   legendaContainer: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 8,
     marginBottom: 16,
-    ...Theme.SHADOWS.light,
   },
   legenda: {
     flexDirection: 'column',
@@ -236,14 +244,11 @@ const styles = StyleSheet.create({
   },
   legendaText: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
   },
   chartContainer: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 8,
     marginBottom: 16,
-    ...Theme.SHADOWS.light,
   },
   chartContent: {
     alignItems: 'center',
@@ -254,11 +259,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   apiaryCard: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
-    ...Theme.SHADOWS.light,
   },
   apiaryHeader: {
     flexDirection: 'row',
@@ -269,21 +272,17 @@ const styles = StyleSheet.create({
   apiaryTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Theme.COLORS.text.primary,
   },
   detailsButton: {
     padding: 6,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: Theme.COLORS.secondary.default,
   },
   detailsButtonText: {
     fontSize: 12,
-    color: Theme.COLORS.secondary.default,
   },
   apiaryInfo: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
     marginBottom: 4,
   },
   weatherInfo: {
@@ -293,12 +292,10 @@ const styles = StyleSheet.create({
   },
   weatherText: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
     marginLeft: 8,
   },
   lastVisitText: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
     marginBottom: 12,
     fontStyle: 'italic',
   },
@@ -336,14 +333,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   urgentCard: {
-    backgroundColor: 'white',
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    ...Theme.SHADOWS.light,
   },
   urgentInfo: {
     flex: 1,
@@ -351,7 +346,6 @@ const styles = StyleSheet.create({
   urgentApiary: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: Theme.COLORS.text.primary,
     marginBottom: 4,
   },
   statusRow: {
@@ -366,32 +360,28 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusboa: {
-    backgroundColor: Theme.COLORS.status.good,
+    backgroundColor: '#4CAF50',
   },
   statusforte: {
-    backgroundColor: Theme.COLORS.status.strong,
+    backgroundColor: '#2196F3',
   },
   statusfraca: {
-    backgroundColor: Theme.COLORS.status.weak,
+    backgroundColor: '#FF9800',
   },
   statusmorta: {
-    backgroundColor: Theme.COLORS.status.dead,
+    backgroundColor: '#F44336',
   },
   urgentStatus: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
   },
   urgentQuantity: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
     marginBottom: 2,
   },
   urgentAction: {
     fontSize: 14,
-    color: Theme.COLORS.text.secondary,
   },
   attendButton: {
-    backgroundColor: Theme.COLORS.primary.default,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 4,

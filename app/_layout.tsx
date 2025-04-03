@@ -7,6 +7,7 @@ import { View, Text } from 'react-native';
 
 import { useColorScheme } from '../hooks/useColorScheme';
 import { ApiaryProvider } from '../context/ApiaryContext';
+import { ThemeProvider } from '../context/ThemeContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -49,10 +50,12 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ApiaryProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </ApiaryProvider>
+    <ThemeProvider>
+      <ApiaryProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </ApiaryProvider>
+    </ThemeProvider>
   );
 }
