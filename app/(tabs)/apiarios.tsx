@@ -73,44 +73,140 @@ export default function ApiaryScreen() {
 
   const renderApiary = ({ item }) => (
     <View style={[styles.apiaryCard, { backgroundColor: theme.COLORS.surface.light }]}>
-      <View style={styles.apiaryHeader}>
-        <Text style={[styles.apiaryTitle, { color: theme.COLORS.text.primary }]}>
+      {/* Cabeçalho do Apiário */}
+      <View style={[styles.apiaryHeaderBanner, { backgroundColor: theme.COLORS.accent.default }]}>
+        <Text style={styles.apiaryHeaderTitle}>
           {item.name} ({item.id})
         </Text>
-        <TouchableOpacity style={[styles.detailsButton, { borderColor: theme.COLORS.primary.default }]}>
-          <Text style={[styles.detailsButtonText, { color: theme.COLORS.primary.default }]}>Detalhes</Text>
+        <Text style={styles.apiaryHeaderSubtitle}>
+          Última visita: {item.lastVisit}
+        </Text>
+      </View>
+      
+      {/* Informações de Localização e Flora */}
+      <View style={styles.apiaryInfoSection}>
+        <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>
+          Localização: {item.location}
+        </Text>
+        <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>
+          Flora: {item.flora}
+        </Text>
+      </View>
+      
+      {/* Status das Colmeias */}
+      <View style={styles.apiaryStatsContainer}>
+        {/* Gráfico de Status */}
+        <View style={styles.apiaryStatsChart}>
+          <Text style={[styles.apiaryStatsTitle, { color: theme.COLORS.text.primary }]}>
+            Status das Colmeias
+          </Text>
+          <View style={styles.pieChartContainer}>
+            <View style={styles.pieChart}>
+              {/* Segmentos do gráfico de pizza simplificado */}
+              <View 
+                style={[
+                  styles.pieChartSegment, 
+                  { 
+                    backgroundColor: theme.COLORS.status.good,
+                    height: '50%',
+                    width: '50%',
+                    borderTopLeftRadius: 40
+                  }
+                ]} 
+              />
+              <View 
+                style={[
+                  styles.pieChartSegment, 
+                  { 
+                    backgroundColor: theme.COLORS.status.strong,
+                    height: '50%',
+                    width: '50%',
+                    borderTopRightRadius: 40
+                  }
+                ]} 
+              />
+              <View 
+                style={[
+                  styles.pieChartSegment, 
+                  { 
+                    backgroundColor: theme.COLORS.status.weak,
+                    height: '50%',
+                    width: '50%',
+                    borderBottomLeftRadius: 40
+                  }
+                ]} 
+              />
+              <View 
+                style={[
+                  styles.pieChartSegment, 
+                  { 
+                    backgroundColor: theme.COLORS.status.dead,
+                    height: '50%',
+                    width: '50%',
+                    borderBottomRightRadius: 40
+                  }
+                ]} 
+              />
+              
+              {/* Total de colmeias no centro */}
+              <View style={styles.pieChartTotal}>
+                <Text style={styles.pieChartTotalText}>
+                  {item.stats.good + item.stats.strong + item.stats.weak + item.stats.dead}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        
+        {/* Detalhes do Status */}
+        <View style={styles.apiaryStatsDetails}>
+          <Text style={[styles.apiaryStatsTitle, { color: theme.COLORS.text.primary }]}>
+            Detalhes
+          </Text>
+          <View style={styles.statusDetailsList}>
+            <View style={styles.statusDetailItem}>
+              <View style={[styles.statusDot, { backgroundColor: theme.COLORS.status.strong }]} />
+              <Text style={[styles.statusDetailText, { color: theme.COLORS.text.primary }]}>
+                {item.stats.strong} Fortes
+              </Text>
+            </View>
+            <View style={styles.statusDetailItem}>
+              <View style={[styles.statusDot, { backgroundColor: theme.COLORS.status.good }]} />
+              <Text style={[styles.statusDetailText, { color: theme.COLORS.text.primary }]}>
+                {item.stats.good} Boas
+              </Text>
+            </View>
+            <View style={styles.statusDetailItem}>
+              <View style={[styles.statusDot, { backgroundColor: theme.COLORS.status.weak }]} />
+              <Text style={[styles.statusDetailText, { color: theme.COLORS.text.primary }]}>
+                {item.stats.weak} Fracas
+              </Text>
+            </View>
+            <View style={styles.statusDetailItem}>
+              <View style={[styles.statusDot, { backgroundColor: theme.COLORS.status.dead }]} />
+              <Text style={[styles.statusDetailText, { color: theme.COLORS.text.primary }]}>
+                {item.stats.dead} Mortas
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      
+      {/* Botões de Ação */}
+      <View style={styles.apiaryActions}>
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.detailsButton]}
+          onPress={() => {}}
+        >
+          <Text style={styles.detailsButtonText}>Detalhes</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.visitButton, { backgroundColor: theme.COLORS.success.default }]}
+          onPress={() => {}}
+        >
+          <Text style={styles.visitButtonText}>Visitar</Text>
         </TouchableOpacity>
       </View>
-      
-      <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>Localização: {item.location}</Text>
-      <Text style={[styles.apiaryInfo, { color: theme.COLORS.text.secondary }]}>Flora: {item.flora}</Text>
-      
-      <View style={styles.statsContainer}>
-        <View style={styles.statsRow}>
-          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.good }]}>
-            <Text style={styles.statValue}>{item.stats.good}</Text>
-            <Text style={styles.statLabel}>Boas</Text>
-          </View>
-          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.strong }]}>
-            <Text style={styles.statValue}>{item.stats.strong}</Text>
-            <Text style={styles.statLabel}>Fortes</Text>
-          </View>
-        </View>
-        <View style={styles.statsRow}>
-          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.weak }]}>
-            <Text style={styles.statValue}>{item.stats.weak}</Text>
-            <Text style={styles.statLabel}>Fracas</Text>
-          </View>
-          <View style={[styles.statBox, { backgroundColor: theme.COLORS.status.dead }]}>
-            <Text style={styles.statValue}>{item.stats.dead}</Text>
-            <Text style={styles.statLabel}>Mortas</Text>
-          </View>
-        </View>
-      </View>
-      
-      <Text style={[styles.lastVisitText, { color: theme.COLORS.text.secondary }]}>
-        Última visita: {item.lastVisit}
-      </Text>
     </View>
   );
 
@@ -263,63 +359,132 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   apiaryCard: {
-    padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 16,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  apiaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+  apiaryHeaderBanner: {
+    padding: 16,
+    paddingBottom: 12,
   },
-  apiaryTitle: {
-    fontSize: 16,
+  apiaryHeaderTitle: {
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  detailsButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    borderWidth: 1,
+  apiaryHeaderSubtitle: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    marginTop: 4,
   },
-  detailsButtonText: {
-    fontSize: 12,
-    fontWeight: '500',
+  apiaryInfoSection: {
+    padding: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   apiaryInfo: {
     fontSize: 14,
-    marginBottom: 4,
-  },
-  statsContainer: {
-    marginVertical: 8,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 8,
   },
-  statBox: {
+  apiaryStatsContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    paddingTop: 0,
+  },
+  apiaryStatsChart: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
   },
-  statValue: {
+  apiaryStatsDetails: {
+    flex: 1,
+    paddingLeft: 12,
+  },
+  apiaryStatsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  pieChartContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  pieChart: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    position: 'relative',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    overflow: 'hidden',
+  },
+  pieChartSegment: {
+    position: 'absolute',
+  },
+  pieChartTotal: {
+    position: 'absolute',
+    top: '25%',
+    left: '25%',
+    width: '50%',
+    height: '50%',
+    borderRadius: 20,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pieChartTotalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  statusDetailsList: {
+    width: '100%',
+  },
+  statusDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  statusDetailText: {
+    fontSize: 14,
+  },
+  apiaryActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailsButton: {
+    borderRightWidth: 0.5,
+    borderRightColor: 'rgba(0,0,0,0.05)',
+  },
+  visitButton: {
+    backgroundColor: '#4CAF50',
+    borderLeftWidth: 0.5,
+    borderLeftColor: 'rgba(0,0,0,0.05)',
+  },
+  detailsButtonText: {
+    color: '#2196F3',
+    fontWeight: 'bold',
+  },
+  visitButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
-  },
-  statLabel: {
-    color: 'white',
-    fontSize: 12,
-  },
-  lastVisitText: {
-    fontSize: 14,
-    fontStyle: 'italic',
-    textAlign: 'right',
-    marginTop: 4,
   },
   emptyContainer: {
     flex: 1,

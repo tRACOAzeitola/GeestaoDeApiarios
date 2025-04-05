@@ -24,16 +24,19 @@ interface InteractiveChartProps {
   title?: string;
   type?: 'bar' | 'circle' | 'donut';
   onItemPress?: (item: ChartItem) => void;
+  singleColor?: string;
+  showLegend?: boolean;
 }
 
 export const InteractiveChart: React.FC<InteractiveChartProps> = ({
   data,
   title,
   type = 'donut',
-  onItemPress
+  onItemPress,
+  singleColor,
+  showLegend = true
 }) => {
   const { theme } = useTheme();
-  const [selectedItem, setSelectedItem] = useState<ChartItem | null>(null);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   
   // Calculando o total para porcentagens
@@ -53,25 +56,64 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
       setExpandedItem(item.id);
     }
     
-    setSelectedItem(item);
-    
     if (onItemPress) {
       onItemPress(item);
     }
   };
   
+  // Adicionar função para calcular as posições dos rótulos
+  const getLabelPosition = (segmentAngle: number, index: number) => {
+    // Posiciona o rótulo do lado de fora do gráfico
+    const angle = segmentAngle * Math.PI / 180;
+    const radius = chartSize / 2 * 1.3; // 30% maior que o raio
+    
+    // Calcula a posição com base no ângulo
+    const x = chartSize / 2 + Math.cos(angle) * radius;
+    const y = chartSize / 2 + Math.sin(angle) * radius;
+    
+    return { x, y };
+  };
+
   const renderCircleChart = () => {
     // Para o gráfico circular, dividimos em segmentos
     let cumulativeAngle = 0;
+    const segmentAngles: {id: string, midAngle: number}[] = [];
+    
+    // Certificar-se de que temos dados para mostrar
+    if (data.length === 0) {
+      return (
+        <View style={[styles.circleContainer, { width: chartSize, height: chartSize }]}>
+          <Text style={{ color: theme.COLORS.text.secondary }}>Sem dados para mostrar</Text>
+        </View>
+      );
+    }
+    
+    console.log("Renderizando gráfico com dados:", data.map(item => `${item.label}: ${item.value}`).join(", "));
+    
+    // Primeiro loop para calcular todos os ângulos para os rótulos
+    data.forEach((item) => {
+      const percentage = item.value / total;
+      const angleSize = percentage * 360;
+      const midAngle = cumulativeAngle + angleSize / 2;
+      segmentAngles.push({ id: item.id, midAngle });
+      cumulativeAngle += angleSize;
+    });
+    
+    // Reset para desenhar os segmentos
+    cumulativeAngle = 0;
     
     return (
       <View style={[styles.circleContainer, { width: chartSize, height: chartSize }]}>
         <View style={styles.segments}>
           {data.map((item, index) => {
             const percentage = item.value / total;
+            const angleSize = percentage * 360;
             const startAngle = cumulativeAngle;
-            const endAngle = startAngle + percentage * 360;
-            cumulativeAngle = endAngle;
+            cumulativeAngle += angleSize;
+            
+            const isSelected = expandedItem === item.id;
+            // Usar cor única se fornecida, caso contrário usar a cor do item
+            const segmentColor = singleColor || item.color;
             
             return (
               <View 
@@ -79,27 +121,37 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
                 style={[
                   styles.segment,
                   {
-                    backgroundColor: item.color,
-                    zIndex: selectedItem?.id === item.id ? 10 : index,
+                    backgroundColor: segmentColor, // Usar cor única ou do item
+                    zIndex: isSelected ? 10 : index,
                     transform: [
                       { rotate: `${startAngle}deg` },
-                      { scale: selectedItem?.id === item.id ? 1.05 : 1 }
+                      { scale: isSelected ? 1.05 : 1 }
                     ],
                     width: '100%',
                     height: '100%',
                     borderRadius: chartSize / 2,
-                    clip: 'slice',
+                    overflow: 'hidden',
                     left: 0,
                     top: 0,
                     position: 'absolute',
                   }
                 ]}
               >
-                <TouchableOpacity
-                  style={styles.segmentTouchable}
-                  onPress={() => handleItemPress(item)}
-                  activeOpacity={0.8}
-                />
+                <View
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    transform: [{ rotate: '0deg' }],
+                    backgroundColor: segmentColor, // Usar cor única ou do item
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.segmentTouchable}
+                    onPress={() => handleItemPress(item)}
+                    activeOpacity={0.8}
+                  />
+                </View>
               </View>
             );
           })}
@@ -113,23 +165,68 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
                   width: chartSize * 0.5, 
                   height: chartSize * 0.5,
                   borderRadius: chartSize * 0.25,
-                  backgroundColor: theme.COLORS.surface.light
+                  backgroundColor: theme.COLORS.surface.dark // Usar uma cor mais escura para contraste com o gráfico vermelho
                 }
               ]}
             >
-              {selectedItem && (
+              {expandedItem ? (
                 <View style={styles.selectedItemInfo}>
-                  <Text style={[styles.selectedItemValue, { color: selectedItem.color }]}>
-                    {selectedItem.value}
+                  <Text style={[styles.selectedItemValue, { 
+                    color: singleColor || (data.find(item => item.id === expandedItem)?.color || theme.COLORS.primary.default)
+                  }]}>
+                    {data.find(item => item.id === expandedItem)?.value || ''}
                   </Text>
                   <Text style={[styles.selectedItemLabel, { color: theme.COLORS.text.secondary }]}>
-                    {selectedItem.label}
+                    {data.find(item => item.id === expandedItem)?.label || ''}
                   </Text>
                 </View>
+              ) : (
+                <Text style={[styles.totalValue, { color: theme.COLORS.text.primary }]}>
+                  {total}
+                </Text>
               )}
             </View>
           )}
         </View>
+        
+        {/* Rótulos ao redor do gráfico */}
+        {segmentAngles.map((segment, index) => {
+          const item = data.find(d => d.id === segment.id);
+          if (!item) return null;
+          
+          const { x, y } = getLabelPosition(segment.midAngle, index);
+          // Usar a cor original do item para os rótulos, mesmo com gráfico monocromático
+          const labelColor = item.color;
+          
+          return (
+            <View 
+              key={`label-${item.id}`}
+              style={[
+                styles.segmentLabel,
+                {
+                  left: x,
+                  top: y,
+                  position: 'absolute',
+                  transform: [{ translateX: -50 }, { translateY: -10 }],
+                }
+              ]}
+            >
+              <Text
+                style={{
+                  color: labelColor,
+                  fontWeight: 'bold',
+                  fontSize: 14,
+                  textAlign: 'center',
+                  textShadowColor: 'rgba(255,255,255,0.7)',
+                  textShadowOffset: { width: 1, height: 1 },
+                  textShadowRadius: 2,
+                }}
+              >
+                {item.label}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -210,23 +307,26 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
         {(type === 'circle' || type === 'donut') ? renderCircleChart() : renderBarChart()}
       </View>
       
-      <View style={styles.legend}>
-        {data.map((item) => (
-          <TouchableOpacity 
-            key={item.id}
-            style={[
-              styles.legendItem,
-              selectedItem?.id === item.id && { backgroundColor: `${item.color}22` }
-            ]}
-            onPress={() => handleItemPress(item)}
-          >
-            <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-            <Text style={[styles.legendLabel, { color: theme.COLORS.text.secondary }]}>
-              {item.label} ({item.value})
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Mostrar legenda apenas se showLegend for true */}
+      {showLegend && (
+        <View style={styles.legend}>
+          {data.map((item) => (
+            <TouchableOpacity 
+              key={item.id}
+              style={[
+                styles.legendItem,
+                expandedItem === item.id && { backgroundColor: `${item.color}22` }
+              ]}
+              onPress={() => handleItemPress(item)}
+            >
+              <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+              <Text style={[styles.legendLabel, { color: theme.COLORS.text.secondary }]}>
+                {item.label} ({item.value})
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -282,6 +382,10 @@ const styles = StyleSheet.create({
   selectedItemLabel: {
     fontSize: 12,
     textAlign: 'center',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   legend: {
     marginTop: 16,
@@ -353,5 +457,9 @@ const styles = StyleSheet.create({
   },
   barExpandedText: {
     fontSize: 12,
-  }
+  },
+  segmentLabel: {
+    position: 'absolute',
+    zIndex: 101,
+  },
 }); 

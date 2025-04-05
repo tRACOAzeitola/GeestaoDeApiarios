@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useApiaryContext } from '../../context/ApiaryContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,23 +14,51 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function DashboardScreen() {
   const { apiaries, totalApiaries, totalHives, hivesData, urgentHives } = useApiaryContext();
   const { theme, isDarkMode } = useTheme();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   // Adaptando hivesData para o formato do InteractiveChart
   const chartData = hivesData().map(item => ({
     id: item.status.toLowerCase(),
     label: item.status,
     value: item.count,
-    color: theme.COLORS.status[item.status.toLowerCase().replace('boas', 'good').replace('fortes', 'strong').replace('fracas', 'weak').replace('mortas', 'dead')] || theme.COLORS.primary.default,
+    color: getStatusColor(item.status, theme),
     icon: getIconForStatus(item.status)
   }));
   
-  function getIconForStatus(status: string): string {
+  // Filtra os dados do gráfico quando uma categoria é selecionada
+  const filteredChartData = selectedCategory
+    ? chartData.filter(item => item.id === selectedCategory.toLowerCase())
+    : chartData;
+    
+  console.log("Dados do gráfico:", chartData.map(item => `${item.label}: ${item.value}`).join(", "));
+  console.log("Dados filtrados:", filteredChartData.map(item => `${item.label}: ${item.value}`).join(", "));
+  
+  // Forçar o uso do gráfico completo quando não houver seleção
+  React.useEffect(() => {
+    if (!selectedCategory && filteredChartData.length !== chartData.length) {
+      console.log("Corrigindo dados do gráfico para mostrar todas as categorias");
+      // Garantir que todos os dados sejam mostrados
+      setSelectedCategory(null);
+    }
+  }, [selectedCategory, filteredChartData, chartData]);
+  
+  function getStatusColor(status: string, theme: any): string {
     switch (status.toLowerCase()) {
-      case 'boas': return 'checkmark-circle';
-      case 'fortes': return 'star';
-      case 'fracas': return 'alert-circle';
-      case 'mortas': return 'close-circle';
-      default: return 'help-circle';
+      case 'boas': return theme.COLORS.status.good;
+      case 'fortes': return theme.COLORS.status.strong;
+      case 'fracas': return theme.COLORS.status.weak;
+      case 'mortas': return theme.COLORS.status.dead;
+      default: return theme.COLORS.primary.default;
+    }
+  }
+  
+  function getIconForStatus(status: string): React.ComponentProps<typeof Ionicons>['name'] {
+    switch (status.toLowerCase()) {
+      case 'boas': return 'checkmark-circle-outline';
+      case 'fortes': return 'star-outline';
+      case 'fracas': return 'alert-circle-outline';
+      case 'mortas': return 'close-circle-outline';
+      default: return 'help-circle-outline';
     }
   }
 
@@ -86,48 +114,169 @@ export default function DashboardScreen() {
           />
         </View>
 
-        {/* Gráfico Interativo */}
+        {/* Gráfico Interativo - Distribuição de Colmeias */}
         <AnimatedCard animationType="fade" delay={400}>
-          <InteractiveChart 
-            data={chartData}
-            title="Distribuição de Colmeias" 
-            type={isSmallScreen ? 'bar' : 'donut'}
-          />
-        </AnimatedCard>
-
-        {/* Sistema de Classificação */}
-        <AnimatedCard animationType="slide" delay={500}>
-          <Text style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}>Sistema de Classificação</Text>
-          
-          <View style={styles.classificationGrid}>
-            {[
-              { icon: '🪨', title: 'Colmeia Boa', desc: '1 pedra ao meio', color: theme.COLORS.status.good },
-              { icon: '🪨🪨', title: 'Colmeia Forte', desc: '2 pedras ao meio', color: theme.COLORS.status.strong },
-              { icon: '↖️🪨', title: 'Colmeia Fraca', desc: '1 pedra à esquerda', color: theme.COLORS.status.weak },
-              { icon: '🥢', title: 'Colmeia Morta', desc: '1 pau ao meio', color: theme.COLORS.status.dead }
-            ].map((item, index) => (
-              <View 
-                key={index} 
+          <View style={styles.sectionHeader}>
+            <Text style={{ 
+              fontSize: 18, 
+              fontWeight: 'bold',
+              color: theme.COLORS.text.primary 
+            }}>
+              Distribuição de Colmeias
+            </Text>
+            
+            <View style={styles.chartControls}>
+              <TouchableOpacity 
                 style={[
-                  styles.classificationCard, 
-                  { 
-                    backgroundColor: isDarkMode ? theme.COLORS.surface.default : 'white',
-                    borderLeftColor: item.color,
-                    borderLeftWidth: 4
-                  }
+                  styles.chartTypeButton,
+                  { backgroundColor: theme.COLORS.primary.light }
                 ]}
+                onPress={() => {}}
               >
-                <Text style={styles.classificationIcon}>{item.icon}</Text>
-                <View style={styles.classificationContent}>
-                  <Text style={[styles.classificationTitle, { color: theme.COLORS.text.primary }]}>
-                    {item.title}
-                  </Text>
-                  <Text style={[styles.classificationDesc, { color: theme.COLORS.text.secondary }]}>
-                    {item.desc}
-                  </Text>
-                </View>
+                <Ionicons 
+                  name={isSmallScreen ? "bar-chart" : "pie-chart"} 
+                  size={16} 
+                  color={theme.COLORS.primary.default} 
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={styles.chartContainer}>
+            {/* Gráfico principal */}
+            <View style={styles.chartWrapper}>
+              {selectedCategory && (
+                <TouchableOpacity
+                  style={styles.resetButton}
+                  onPress={() => {
+                    // Garantir que voltamos para a visão completa
+                    setSelectedCategory(null);
+                    console.log('Resetando para visão completa');
+                  }}
+                >
+                  <Ionicons name="close-circle" size={24} color={theme.COLORS.text.secondary} />
+                  <Text style={{ marginLeft: 8, color: theme.COLORS.text.secondary }}>Voltar à visão completa</Text>
+                </TouchableOpacity>
+              )}
+              <InteractiveChart 
+                data={filteredChartData}
+                type={isSmallScreen ? 'bar' : 'donut'}
+                showLegend={false}
+                onItemPress={(item) => {
+                  if (selectedCategory === item.id) {
+                    // Se clicar no mesmo item novamente, desseleciona
+                    setSelectedCategory(null);
+                  } else {
+                    // Seleciona o item clicado
+                    setSelectedCategory(item.id);
+                  }
+                }}
+              />
+            </View>
+            
+            {/* Legenda do gráfico */}
+            <View style={styles.legendContainer}>
+              <View style={styles.totalContainer}>
+                <Text style={{ 
+                  fontSize: 14, 
+                  fontWeight: 'bold',
+                  color: theme.COLORS.text.secondary 
+                }}>
+                  Total
+                </Text>
+                <Text style={{ 
+                  fontSize: 36, 
+                  fontWeight: 'bold',
+                  color: theme.COLORS.primary.default
+                }}>
+                  {selectedCategory 
+                    ? chartData.find(item => item.id === selectedCategory.toLowerCase())?.value || 0
+                    : totalHives()}
+                </Text>
               </View>
-            ))}
+              
+              <View style={styles.legendItems}>
+                {hivesData().map((item) => {
+                  const statusColor = getStatusColor(item.status, theme);
+                  const percentage = Math.round((item.count / totalHives()) * 100);
+                  const isSelected = selectedCategory?.toLowerCase() === item.status.toLowerCase();
+                  
+                  return (
+                    <TouchableOpacity 
+                      key={item.status} 
+                      style={[
+                        styles.legendItem,
+                        isSelected && { 
+                          backgroundColor: `${statusColor}22`,
+                          borderRadius: 8,
+                          borderLeftWidth: 3,
+                          borderLeftColor: statusColor,
+                          padding: 6
+                        }
+                      ]}
+                      onPress={() => {
+                        if (selectedCategory === item.status.toLowerCase()) {
+                          setSelectedCategory(null);
+                        } else {
+                          setSelectedCategory(item.status.toLowerCase());
+                        }
+                      }}
+                    >
+                      <View style={styles.legendItemHeader}>
+                        <View 
+                          style={[
+                            styles.legendColorDot, 
+                            { backgroundColor: statusColor }
+                          ]} 
+                        />
+                        <Text style={{ 
+                          fontSize: 14, 
+                          fontWeight: 'bold',
+                          color: theme.COLORS.text.primary 
+                        }}>
+                          {item.status}
+                        </Text>
+                      </View>
+                      
+                      <View style={styles.legendItemValue}>
+                        <Text style={{ 
+                          fontSize: 18, 
+                          fontWeight: 'bold',
+                          color: statusColor 
+                        }}>
+                          {item.count}
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 12,
+                          color: theme.COLORS.text.secondary,
+                          marginLeft: 4
+                        }}>
+                          ({percentage}%)
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </View>
+          
+          {/* Tendência temporal - Somente se houver dados históricos */}
+          <View style={[styles.trendSection, { borderTopColor: theme.COLORS.border.light, borderTopWidth: 1 }]}>
+            <Text style={{ 
+              fontSize: 14, 
+              fontWeight: 'bold',
+              color: theme.COLORS.text.secondary,
+              marginBottom: 8 
+            }}>
+              Tendência (últimos 3 meses)
+            </Text>
+            
+            <View style={styles.trendPlaceholder}>
+              <Text style={{ color: theme.COLORS.text.secondary, fontSize: 12, fontStyle: 'italic' }}>
+                Dados históricos serão exibidos aqui quando disponíveis
+              </Text>
+            </View>
           </View>
         </AnimatedCard>
 
@@ -136,7 +285,12 @@ export default function DashboardScreen() {
           <View style={styles.apiariesContainer}>
             <AnimatedText 
               text="Apiários Recentes" 
-              style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}
+              style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                marginBottom: 12,
+                color: theme.COLORS.text.primary 
+              }}
               animationType="fade"
               delay={600}
             />
@@ -243,7 +397,12 @@ export default function DashboardScreen() {
           <View style={styles.urgentContainer}>
             <AnimatedText 
               text="Colmeias que Necessitam Atenção" 
-              style={[styles.sectionTitle, { color: theme.COLORS.text.primary }]}
+              style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                marginBottom: 12,
+                color: theme.COLORS.text.primary 
+              }}
               animationType="fade"
               delay={800}
             />
@@ -256,9 +415,7 @@ export default function DashboardScreen() {
                       <View 
                         style={[
                           styles.statusIndicator, 
-                          { 
-                            backgroundColor: theme.COLORS.status[hive.status.toLowerCase().replace('boa', 'good').replace('forte', 'strong').replace('fraca', 'weak').replace('morta', 'dead')] 
-                          }
+                          { backgroundColor: getStatusColor(hive.status, theme) }
                         ]} 
                       />
                       <Text style={[styles.urgentStatus, { color: theme.COLORS.text.secondary }]}>
@@ -323,31 +480,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
-  },
-  classificationGrid: {
-    marginTop: 8,
-  },
-  classificationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  classificationIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  classificationContent: {
-    flex: 1,
-  },
-  classificationTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  classificationDesc: {
-    fontSize: 12,
   },
   apiariesContainer: {
     marginVertical: 16,
@@ -437,5 +569,84 @@ const styles = StyleSheet.create({
   urgentAction: {
     fontSize: 14,
     marginLeft: 6,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  chartWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  legendContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+  },
+  totalContainer: {
+    marginRight: 24,
+  },
+  legendItems: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  legendItem: {
+    width: '48%',
+    marginBottom: 12,
+  },
+  legendItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  legendItemValue: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  legendColorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+  trendSection: {
+    marginTop: 8,
+    paddingTop: 16,
+  },
+  trendPlaceholder: {
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8,
+  },
+  chartControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chartTypeButton: {
+    borderRadius: 16,
+    padding: 8,
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 12,
   },
 });
