@@ -9,37 +9,45 @@ Esta aplicação foi desenvolvida para apicultores que precisam de uma ferrament
 ### Funcionalidades Implementadas
 
 - **Dashboard Completo**:
-  - Contadores totais de apiários e colmeias
-  - Visualização gráfica das condições das colmeias (Victory Charts)
-  - Lista de apiários recentes com detalhes
-  - Colmeias que necessitam de atenção prioritária
-  - Sistema de legenda para classificação visual
+  - ✅ Contadores totais de apiários e colmeias
+  - ✅ Visualização gráfica das condições das colmeias (Victory Charts e gráficos interativos)
+  - ✅ Lista de apiários recentes com detalhes
+  - ✅ Colmeias que necessitam de atenção prioritária
+  - ✅ Sistema de legenda para classificação visual
   
 - **Gestão de Apiários**:
-  - Formulário para adição de novos apiários
-  - Validação de campos obrigatórios
-  - Registro de coordenadas e tipo de flora
+  - ✅ Formulário para adição de novos apiários
+  - ✅ Validação de campos obrigatórios
+  - ✅ Registro de coordenadas e tipo de flora
   
 - **Controle de Colmeias**:
-  - Adição de colmeias em lote por estado (boas, fortes, fracas, mortas)
-  - Sistema visual de classificação com marcadores físicos
-  - Observações específicas por lote de colmeias
+  - ✅ Adição de colmeias por estado (boas, fortes, fracas, mortas)
+  - ✅ Sistema visual de classificação com marcadores físicos
+  - ✅ Observações específicas por colmeias
+  - ✅ Interface interativa para atualização de contagens
   
 - **Inventário de Materiais**:
-  - Registro de materiais apícolas por apiário
-  - Controle de quantidades e tipos de equipamentos
-  - Interface intuitiva para gestão de estoque
+  - ✅ Registro de materiais apícolas por apiário
+  - ✅ Controle de quantidades e tipos de equipamentos
+  - ✅ Interface intuitiva para gestão de estoque
   
 - **Monitoramento Climático**:
-  - Registro das condições meteorológicas (temperatura, condição, umidade)
-  - Histórico de visitas com datas
-  - Visualização das condições atuais por apiário
-  - Ícones dinâmicos baseados no clima
+  - ✅ Registro das condições meteorológicas (temperatura, condição, umidade)
+  - ✅ Histórico de visitas com datas
+  - ✅ Visualização das condições atuais por apiário
+  - ✅ Ícones dinâmicos baseados no clima
   
 - **Sistema de Estado Global**:
-  - Context API para gerenciamento centralizado de dados
-  - Compartilhamento de informações entre telas
-  - Funções reutilizáveis para operações comuns
+  - ✅ Context API para gerenciamento centralizado de dados
+  - ✅ Compartilhamento de informações entre telas
+  - ✅ Funções reutilizáveis para operações comuns
+
+- **Interface de Usuário Moderna**:
+  - ✅ Sistema de temas com suporte a modo escuro
+  - ✅ Componentes animados para melhor experiência do usuário
+  - ✅ Design responsivo adaptado a diferentes tamanhos de tela
+  - ✅ Gráficos interativos com feedback visual
+  - ✅ Cards e seções bem definidas para visualização de dados
 
 ## Como Iniciar
 
@@ -75,13 +83,13 @@ Este projeto continuará evoluindo nas seguintes direções:
 - ✅ Formulários com validação e feedback visual
 - ✅ Design responsivo e intuitivo
 
-### Fase 2 (Próximos Passos)
+### Fase 2 (Em Andamento)
+- ✅ Melhorias de UI/UX com tema escuro e animações
+- ✅ Filtros e buscas para conjuntos de dados
+- ✅ Controle de produção por colmeia (visualização inicial)
 - Persistência de dados com AsyncStorage
 - Suporte a fotografias para documentação visual dos apiários
 - Sistema de notificações para tarefas pendentes e alertas
-- Melhorias de UI/UX com tema escuro e animações
-- Filtros e buscas avançadas para grandes conjuntos de dados
-- Controle de produção por colmeia (mel, própolis, etc.)
 
 ### Fase 3 (Médio Prazo)
 - Integração com APIs reais de previsão do tempo (OpenWeatherMap, etc.)
@@ -100,15 +108,26 @@ Este projeto continuará evoluindo nas seguintes direções:
 - Sistema offline-first com sincronização inteligente
 - Suporte a múltiplos idiomas e regionalização
 
+## Componentes Reutilizáveis
+
+O projeto inclui uma biblioteca de componentes personalizados:
+
+- **AnimatedCard**: Cards com diferentes tipos de animação (fade, slide, scale, pop)
+- **AnimatedButton**: Botões interativos com feedback visual
+- **AnimatedText**: Textos com animações variadas
+- **InteractiveChart**: Gráficos modernos e responsivos (barras, pizza e donut)
+- **StatCard**: Cards de estatísticas com indicadores de tendência
+
 ## Tecnologias Utilizadas
 
 - **React Native & Expo**: base do desenvolvimento mobile
 - **TypeScript**: para tipagem estática e melhor manutenção do código
-- **Victory Native**: para visualização de dados e gráficos interativos
+- **Victory Native**: para visualização básica de dados e gráficos
+- **React Native Reanimated**: para animações fluidas e interativas
 - **Context API**: para gerenciamento de estado global
 - **React Navigation**: para navegação entre telas
 - **@react-native-picker/picker**: para seletores de opções
-- **react-native-reanimated**: para animações fluidas (em implementação)
+- **@react-native-async-storage/async-storage**: para persistência de dados local
 - **Ionicons**: para sistema de ícones consistente
 
 ## Contribuições
